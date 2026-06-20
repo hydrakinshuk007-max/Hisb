@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mistri Hisaab Ledger Pro</title>
+    <style>
+        :root {
+            --primary: #1e3c72;
+            --primary-light: #2a5298;
+            --success: #2e7d32;
+            --danger: #d32f2f;
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #333333;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg); margin: 0; padding: 12px; display: flex; justify-content: center; color: var(--text); }
+        .app-box { width: 100%; max-width: 480px; background: var(--card-bg); padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        
+        h2 { text-align: center; color: var(--primary); margin: 0 0 15px 0; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        .metrics-card { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 18px; border-radius: 12px; text-align: center; margin-bottom: 20px; box-shadow: 0 6px 15px rgba(30, 60, 114, 0.25); }
+        .metrics-card p { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; font-weight: 600; }
+        .metrics-card h1 { margin: 5px 0 0 0; font-size: 34px; font-weight: 700; color: #fff; }
+        
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: #555; }
+        input { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--primary); }
+        
+        .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .btn:active { transform: scale(0.98); }
+        .btn-wa { background: #25D366; margin-top: 10px; box-shadow: 0 4px 6px rgba(37, 211, 102, 0.2); }
+        
+        .controls { margin-top: 25px; background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #edf2f7; }
+        .search-input { margin-bottom: 10px; border: 1px solid #cbd5e1; padding: 10px; }
+        .filter-tabs { display: flex; gap: 5px; }
+        .tab { flex: 1; padding: 8px; font-size: 12px; font-weight: bold; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer; text-align: center; }
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .list-header { margin: 20px 0 10px 0; font-size: 16px; font-weight: 700; color: #475569; display: flex; justify-content: space-between; align-items: center; }
+        .count-badge { background: #e2e8f0; font-size: 12px; padding: 2px 8px; border-radius: 20px; }
+        
+        /* Cards */
+        .card { background: #fff; border: 1px solid #e2e8f0; border-left: 5px solid #1a73e8; padding: 15px; margin-bottom: 12px; border-radius: 10px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .card.paid-card { border-left: 5px solid var(--danger); background-color: #fff5f5; }
+        .card h4 { margin: 0 0 8px 0; font-size: 18px; color: #1e293b; padding-right: 90px; word-break: break-all; }
+        
+        .data-p { margin: 6px 0; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px dashed #f1f5f9; padding-bottom: 4px; }
+        .data-p span:first-child { color: #64748b; }
+        .val-bold { font-weight: 600; color: #0f172a; }
+        .red-text { color: var(--danger); font-weight: 700; }
+        .green-text { color: var(--success); font-weight: 700; }
+        
+        /* History Log Style */
+        .history-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin-top: 10px; }
+        .history-title { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .history-item { font-size: 12px; color: #334155; display: flex; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #f1f5f9; }
+        .history-item:last-child { border-bottom: none; }
+
+        .paid-stamp {
+            position: absolute;
+            top: 45px;
+            right: 15px;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            padding: 2px 8px;
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-radius: 4px;
+            transform: rotate(-12deg);
+            background-color: rgba(211, 47, 47, 0.03);
+        }
+        
+        .actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; }
+        .act-btn { border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; color: white; }
+        .edit-btn { background-color: #0ea5e9; }
+        .del-btn { background-color: var(--danger); }
+        
+        /* Info alert text */
+        .info-note { font-size: 11px; color: #64748b; margin-top: -8px; margin-bottom: 10px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="app-box">
+    <h2>建 Mistri Hisaab Ledger Pro</h2>
+    
+    <div class="metrics-card">
+        <p>🚨 KUL BAKI (TOTAL DUES)</p>
+        <h1 id="totalDues">₹0</h1>
+    </div>
+
+    <input type="hidden" id="editIndex" value="-1">
+
+    <!-- Form Section -->
+    <div class="form-group">
+        <label>👤 Mistri Ka Naam</label>
+        <input type="text" id="mName" placeholder="Jaise: Sunil Kumar">
+    </div>
+    <div class="form-group">
+        <label>💰 Kul Mazdoori (Total Amount)</label>
+        <input type="number" id="mTotal" placeholder="₹ 0">
+    </div>
+    <div class="form-group">
+        <label>✅ Naya Paid Amount (Jo Aaj Diya)</label>
+        <input type="number" id="mPaid" placeholder="₹ 0">
+    </div>
+    <div class="info-note" id="infoNote">Naya khata banate waqt shuruati payment likhein. Dubara dene ke liye niche Edit karein.</div>
+    
+    <div class="form-group">
+        <label>📅 Yeh Payment Kis Din Diya (Date)</label>
+        <input type="date" id="pDate">
+    </div>
+    
+    <button class="btn" id="submitBtn" onclick="saveData()">Hisaab Save Karein</button>
+    <button class="btn btn-wa" onclick="sendWhatsApp()">💬 Bhai ko WhatsApp Par Bheinjein</button>
+
+    <!-- Search & Filter Controls -->
+    <div class="controls">
+        <input type="text" class="search-input" id="searchBar" oninput="showData()" placeholder="🔍 Mistri ka naam khojein...">
+        <div class="filter-tabs">
+            <div class="tab active" id="filter-all" onclick="setFilter('all')">Sabhi</div>
+            <div class="tab" id="filter-dues" onclick="setFilter('dues')">Baki Wale</div>
+            <div class="tab" id="filter-paid" onclick="setFilter('paid')">Paid Wale</div>
+        </div>
+    </div>
+
+    <!-- Records display list -->
+    <div class="list-header">
+        <span>📋 Hisaab Records</span>
+        <span class="count-badge" id="recordCount">0 Users</span>
+    </div>
+    <div id="recordsArea"></div>
+</div>
+
+<script>
+    let currentFilter = 'all';
+
+    window.onload = function() {
+        setDefaultDate();
+        showData();
+    };
+
+    function setDefaultDate() {
+        let today = new Date().toISOString().split('T')[0];
+        document.getElementById('pDate').value = today;
+    }
+
+    function formatDateHindi(dateString) {
+        if (!dateString) return "N/A";
+        let dateObj = new Date(dateString);
+        let options = { month: 'short', day: 'numeric', year: 'numeric' };
+        return dateObj.toLocaleDateString('hi-IN', options);
+    }
+
+    function saveData() {
+        let name = document.getElementById('mName').value.trim();
+        let total = parseFloat(document.getElementById('mTotal').value) || 0;
+        let incomingPaid = parseFloat(document.getElementById('mPaid').value) || 0;
+        let pDate = document.getElementById('pDate').value;
+        let editIndex = parseInt(document.getElementById('editIndex').value);
+
+        if (name === "") {
+            alert("⚠️ Kripya Mistri ka naam zaroor likhein!");
+            return;
+        }
+
+        let currentData = JSON.parse(localStorage.getItem("mistri_ledger_list")) || [];
+
+        if (editIndex === -1) {
+            // New entry flow
+            let historyArray = [];
+            if (incomingPaid > 0) {
+                historyArray.push({ amount: incomingPaid, date: pDate });
+            }
+            
+            let entry = { 
+                name: name, 
+                total: total, 
+                paid: incomingPaid, 
+                baki: total - incomingPaid, 
+                history: historyArray 
+            };
+            currentData.push(entry);
+        } else {
+            // Edit / Add payment flow
+            let targetItem = currentData[editIndex];
+            
+            // Check if user changed the name or total work cost
+            targetItem.name = name;
+            targetItem.total = total;
+            
+            // If any amount is entered in the paid box, append it to history log
+            if (incomingPaid > 0) {
+                targetItem.history.push({ amount: incomingPaid, date: pDate });
+            }
+            
+            // Recalculate grand total paid from history array
+            let finalPaidSum = 0;
+            targetItem.history.forEach(h => finalPaidSum += h.amount);
+            
+            targetItem.paid = finalPaidSum;
+            targetItem.baki = total - finalPaidSum;
+            
+            // Reset standard flow
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('submitBtn').innerText = "Hisaab Save Karein";
+            document.getElementById('submitBtn').style.background = "linear-gradient(135deg, #1e3c72, #2a5298)";
+            document.getElementById('infoNote').innerText = "Naya khata banate waqt shuruati payment likhein. Dubara dene ke liye niche Edit karein.";
+        }
+
+        localStorage.setItem("mistri_ledger_list", JSON.stringify(currentData));
+
+        // Form fields clear out
+        document.getElementById('mName').value = "";
+        document.getElementById('mTotal').value = "";
+        document.getElementById('mPaid').value = "";
+        setDefaultDate();
+
+        showData();
+    }
+
+    function setFilter(filterType) {
+        currentFilter = filterType;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`filter-${filterType}`).classList.add('active');
+        showData();
+    }
+
+    function showData() {
+        let currentData = JSON.parse(localStorage.getItem("mistri_ledger_list")) || [];
+        let searchKeyword = document.getElementById('searchBar').value.toLowerCase();
+        let area = document.getElementById('recordsArea');
+        area.innerHTML = "";
+
+        let globalDuesSum = 0;
+        let renderedCount = 0;
+
+        currentData.forEach(item => {
+            if(item.baki > 0) globalDuesSum += item.baki;
+        });
+        document.getElementById('totalDues').innerText = "₹" + globalDuesSum;
+
+        if (currentData.length === 0) {
+            area.innerHTML = "<p style='color:#94a3b8; text-align:center; font-size:14px;'>Abhi koi data available nahi hai.</p>";
+            document.getElementById('recordCount').innerText = "0 Records";
+            return;
+        }
+
+        for (let i = 0; i < currentData.length; i++) {
+            let item = currentData[i];
+
+            if (currentFilter === 'dues' && item.baki <= 0) continue;
+            if (currentFilter === 'paid' && item.baki > 0) continue;
+            if (searchKeyword && !item.name.toLowerCase().includes(searchKeyword)) continue;
+
+            renderedCount++;
+            let isPaid = item.baki <= 0;
+            
+            // Construct dynamic history logs HTML UI element
+            let historyHTML = "";
+            if(item.history && item.history.length > 0) {
+                historyHTML += `<div class="history-box"><div class="history-title">📆 Payment History:</div>`;
+                item.history.forEach(h => {
+                    historyHTML += `
+                        <div class="history-item">
+                            <span>🔹 ${formatDateHindi(h.date)}</span>
+                            <span class="val-bold">₹${h.amount}</span>
+                        </div>`;
+                });
+                historyHTML += `</div>`;
+            } else {
+                historyHTML = `<p style="font-size:12px; color:#94a3b8; margin:5px 0 0 0;">⚠️ Abhi tak koi payment nahi kiya.</p>`;
+            }
+
+            area.innerHTML += `
+                <div class="${isPaid ? 'card paid-card' : 'card'}">
+                    <div class="actions">
+                        <button class="act-btn edit-btn" onclick="editData(${i})">Edit</button>
+                        <button class="act-btn del-btn" onclick="deleteData(${i})">Del</button>
+                    </div>
+                    <h4>👤 ${item.name}</h4>
+                    <div class="data-p"><span>Total Amt:</span> <span class="val-bold">₹${item.total}</span></div>
+                    <div class="data-p"><span>Kul Diya (Paid):</span> <span class="green-text">₹${item.paid}</span></div>
+                    <div class="data-p"><span>Baki (Due):</span> <span class="${isPaid ? 'green-text' : 'red-text'}">₹${item.baki}</span></div>
+                    ${historyHTML}
+                    ${isPaid ? `<div class="paid-stamp">PAID</div>` : ""}
+                </div>
+            `;
+        }
+
+        document.getElementById('recordCount').innerText = `${renderedCount} Records`;
+        if(renderedCount === 0) {
+            area.innerHTML = "<p style='color:#94a3b8; text-align:center; font-size:14px;'>Matching criteria me koi nahi mila.</p>";
+        }
+    }
+
+    function editData(index) {
+        let currentData = JSON.parse(localStorage.getItem("mistri_ledger_list")) || [];
+        let item = currentData[index];
+
+        document.getElementById('mName').value = item.name;
+        document.getElementById('mTotal').value = item.total;
+        
+        // Keep paid input box clean for inserting fresh multi payments logs
+        document.getElementById('mPaid').value = ""; 
+        setDefaultDate();
+        
+        document.getElementById('editIndex').value = index;
+        document.getElementById('infoNote').innerText = "💡 Tip: Jo naya paisa abhi de rahe hain sirf wahi likhein (yeh purane payments me jud jayega).";
+        
+        document.getElementById('submitBtn').innerText = "➕ Naya Payment Jodein / Update";
+        document.getElementById('submitBtn').style.background = "#0288d1";
+        
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function deleteData(index) {
+        if(confirm("❌ Kya aap sach me yeh record delete karna chahte hain?")) {
+            let currentData = JSON.parse(localStorage.getItem("mistri_ledger_list")) || [];
+            currentData.splice(index, 1);
+            localStorage.setItem("mistri_ledger_list", JSON.stringify(currentData));
+            showData();
+        }
+    }
+
+    function sendWhatsApp() {
+        let currentData = JSON.parse(localStorage.getItem("mistri_ledger_list")) || [];
+        if (currentData.length === 0) {
+            alert("Bhejne ke liye koi data nahi hai!");
+            return;
+        }
+
+        let text = "*👷 MISTRI HISAAB LEDGER REPORT*\n\n";
+        let totalBaki = 0;
+
+        currentData.forEach((m, idx) => {
+            if(m.baki > 0) totalBaki += m.baki;
+            let statusText = m.baki <= 0 ? "✅ PAID (FULL)" : `₹${m.baki}`;
+            
+            text += `${idx+1}) *Naam:* ${m.name}\n   • Kul Mazdoori: ₹${m.total}\n   • Kul Diya: ₹${m.paid}\n   • Baki Balance: ${statusText}\n`;
+            
+            if(m.history && m.history.length > 0) {
+                text += `   • *History:* \n`;
+                m.history.forEach(h => {
+                    text += `     - ${formatDateHindi(h.date)} -> ₹${h.amount}\n`;
+                });
+            }
+            text += `\n`;
+        });
+
+        text += `-------------------------\n🚨 *TOTAL OUTSTANDING DUES: ₹${totalBaki}*`;
+        let url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(text);
+        window.open(url, '_blank');
+    }
+</script>
+
+</body>
+</html>
